@@ -1,0 +1,1 @@
+dll-injector-cli-64 eject %1 SoundDetour.dll

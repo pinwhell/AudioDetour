@@ -1,0 +1,2 @@
+add_executable(NanaTests NanaTests.cpp)
+target_link_libraries(NanaTests SimpleWidget)

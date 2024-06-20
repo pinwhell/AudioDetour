@@ -1,0 +1,1 @@
+dll-injector-cli-64 inject %1 ./out/build/x64-Debug/src/SoundDetour.dll

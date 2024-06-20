@@ -1,0 +1,12 @@
+[submodule "vendor/minhook"]
+	path = vendor/minhook
+	url = https://github.com/TsudaKageyu/minhook
+[submodule "vendor/fmt"]
+	path = vendor/fmt
+	url = https://github.com/fmtlib/fmt
+[submodule "vendor/nana"]
+	path = vendor/nana
+	url = https://github.com/cnjinhao/nana
+[submodule "vendor/CRNLCH"]
+	path = vendor/CRNLCH
+	url = https://github.com/pinwhell/CRNLCH
