@@ -3,7 +3,7 @@
 #include <dll_injector.h>
 #include <MinHook.h>
 #include <thread>
-//#include <MMDetours.h>
+#include <MMDetours.h>
 
 HMODULE hThisMod;
 
@@ -28,11 +28,11 @@ HRESULT WINAPI hCoCreateInstance(
 	if (CALLER_IN_MODULE(hThisMod) || FAILED(hRes))
 		return hRes;
 
-	/*if (IsEqualGUID(__uuidof(MMDeviceEnumerator), rclsid))
+	if (IsEqualGUID(__uuidof(MMDeviceEnumerator), rclsid))
 	{
 		*ppv = new DetourMultiMediaDevEnumer((IMMDeviceEnumerator*)*ppv);
 		return S_OK;
-	}*/
+	}
 
 	return S_OK;
 }
@@ -91,33 +91,31 @@ NTSTATUS NTAPI hZwCreateuserProcess(
 	return res;
 }
 
-//HRESULT (STDMETHODCALLTYPE* oActivate)(
-//	IMMDevice* thiz,
-//	REFIID iid,
-//	DWORD dwClsCtx,
-//	PROPVARIANT* pActivationParams,
-//	void** ppInterface);
-//
-//
-//HRESULT STDMETHODCALLTYPE hActivate(
-//	IMMDevice* thiz,
-//	REFIID iid,
-//	DWORD dwClsCtx,
-//	PROPVARIANT* pActivationParams,
-//	void** ppInterface)
-//{
-//	MessageBoxA(NULL, ("hActivate" + std::to_string((int)GetCurrentProcessId())).c_str(), NULL, MB_OK);
-//
-//	const auto activate = [&](IMMDevice* dev = nullptr) {
-//		return oActivate(dev ? dev : thiz, iid, dwClsCtx, pActivationParams, ppInterface);
-//		};
-//
-//	return activate(AskUserMultiMediaDevice());
-//}
+HRESULT (STDMETHODCALLTYPE* oActivate)(
+	IMMDevice* thiz,
+	REFIID iid,
+	DWORD dwClsCtx,
+	PROPVARIANT* pActivationParams,
+	void** ppInterface);
+
+
+HRESULT STDMETHODCALLTYPE hActivate(
+	IMMDevice* thiz,
+	REFIID iid,
+	DWORD dwClsCtx,
+	PROPVARIANT* pActivationParams,
+	void** ppInterface)
+{
+	const auto activate = [&](IMMDevice* dev = nullptr) {
+		return oActivate(dev ? dev : thiz, iid, dwClsCtx, pActivationParams, ppInterface);
+		};
+
+	return activate(AskUserMultiMediaDevice());
+}
 
 BOOL CALLBACK DllMain(HMODULE hMod, DWORD loadReason)
 {
-	//static VTable immDeviceVTBL = IMMDeviceVTableGet().value();
+	static VTable immDeviceVTBL = IMMDeviceVTableGet().value();
 
 	hThisMod = hMod;
 
@@ -132,12 +130,12 @@ BOOL CALLBACK DllMain(HMODULE hMod, DWORD loadReason)
 		MH_CreateHook(ZwCreateuserProcess, hZwCreateuserProcess, (LPVOID*)&oZwCreateuserProcess);
 		MH_EnableHook(ZwCreateuserProcess);
 
-		//immDeviceVTBL.Replace(EVTBLIMMDevice::Activate, hActivate, oActivate);
+		immDeviceVTBL.Replace(EVTBLIMMDevice::Activate, hActivate, oActivate);
 	}
 
 	if (loadReason == DLL_PROCESS_DETACH)
 	{
-		//immDeviceVTBL.Restore(EVTBLIMMDevice::Activate);
+		immDeviceVTBL.Restore(EVTBLIMMDevice::Activate);
 
 		MH_DisableHook(ZwCreateuserProcess);
 		MH_DisableHook(CoCreateInstance);
